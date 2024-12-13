@@ -1,0 +1,76 @@
+{
+    "modelsDB": [
+        {
+            "category": "DESK",
+            "objects": [
+                {
+                    "name": "DESK-WVR",
+                    "model": "assets/models/glb/DESK-WVR.glb",
+                    "start": 1.12,
+                    "morph": [
+                        { "label": "Height", "min": 0.72 },
+                        { "label": "Width", "min": 1.52, "max": 2.80 },
+                        { "label": "Depth", "min": 0.91, "max": 1.22 }
+                    ],
+                    "materials": [
+                        { "label": "Desk Top", "name_in_model" : "desk-top", "types": "MaterialTypes" },
+                        { "label": "Desk Modesty","name_in_model" : "desk-modesty", "types": "MaterialTypes" },
+                        { "label": "Desk Gable", "name_in_model" : "desk-gable", "types": "MaterialTypes" }
+                    ],
+                    "styles": [
+                        { "label": "Modesty Style", "types": "ModestyStyles" },
+                        { "label": "Grommet Style", "types": "GrommetStyles" }
+                    ]
+                }
+            ]
+        },
+        {
+            "category": "LST",
+            "objects": [
+                {
+                    "name": "LST-2QD-OP-GD",
+                    "model": "assets/models/glb/LST-2QD-OP-GD.glb",
+                    "start": 1.52,
+                    "morph": [
+                        { "label": "Height", "min": 1.52, "max": 3.05 },
+                        { "label": "Width", "min": 0.91, "max": 1.52 },
+                        { "label": "Depth", "min": 0.38, "max": 0.61 }
+                    ],
+                    "materials": [
+                        { "label": "Body", "name_in_model" : "cabinet-body", "types": "MaterialTypes" },
+                        { "label": "Top", "name_in_model" : "cabinet-top", "types": "MaterialTypes" },
+                        { "label": "Glass","name_in_model" : "glass", "types": "GlassTypes" }
+                    ]
+                }
+            ]
+        }
+    ],
+    "types": {
+        "ModestyStyles": [
+            { "label": "12m", "name_in_model": "desk-modesty-12m" },
+            { "label": "18m", "name_in_model": "desk-modesty-18m" },
+            { "label": "28m", "name_in_model": "desk-modesty-28m" }
+        ],
+        "GrommetStyles": [
+            { "label": "COG", "name_in_model": "grommet-cog" },
+            { "label": "NG", "name_in_model": "grommet-ng" }
+        
+        ],
+        "MaterialTypes": [
+            { "label": "Seamless 1", "texture": "/assets/textures/seamless-01.jpg" },
+            { "label": "Seamless 2", "texture": "/assets/textures/seamless-02.jpg" },
+            { "label": "Oak", "texture": "/assets/textures/Oak.jpg" }
+        ],
+        "GlassTypes": [
+            { "label": "Clear", "texture": "/assets/textures/frosted-0.jpg" },
+            { "label": "50% Frosted", "texture": "/assets/textures/frosted-50.jpg" }
+        ],
+        "AdditionalModestyStyles": [
+            { "label": "Acrylic", "name_in_model": "modesty-16ma" }
+        ],
+        "AdvancedGrommetStyles": [
+            { "label": "NG", "name_in_model": "grommet-ng" },
+            { "label": "LG", "name_in_model": "grommet-lg" }
+        ]
+    }
+}
