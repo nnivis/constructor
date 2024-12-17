@@ -10,13 +10,12 @@ namespace CodeBase.Services.FurnitureConstructor.Data
         private const string Width = "width";
         private const string Depth = "depth";
 
-        private readonly Database _database;
+        private readonly FurnitureLoader _furnitureLoader;
         private readonly Modifier.Modifier _modifier;
 
-        public FurnitureFactory()
+        public FurnitureFactory(FurnitureLoader furnitureLoader)
         {
-            var furnitureLoader = new FurnitureLoader();
-            _database = furnitureLoader.LoadDatabase();
+            _furnitureLoader = furnitureLoader;
             _modifier = new Modifier.Modifier();
         }
 
@@ -24,18 +23,13 @@ namespace CodeBase.Services.FurnitureConstructor.Data
         {
             if (prefab == null) return null;
 
-            var furnitureName = prefab.name;
-            var furnitureObject = FindFurnitureObject(furnitureName, _database);
-
-            if (furnitureObject == null) return null;
-
-            var data = new FurnitureData
+            var data = _furnitureLoader.GetFurnitureData(prefab.name);
+            if (data == null)
             {
-                name = furnitureObject.name,
-                start = furnitureObject.start
-            };
+                Debug.LogError($"Failed to get FurnitureData for: {prefab.name}");
+                return null;
+            }
 
-            PopulateDataFromDatabase(furnitureObject, data);
             SaveMorphUVs(prefab.transform, data);
             RemoveMorphElements(prefab.transform);
 
@@ -43,78 +37,6 @@ namespace CodeBase.Services.FurnitureConstructor.Data
             furnitureComponent.Initialize(prefab, data, _modifier);
 
             return furnitureComponent;
-        }
-
-        private FurnitureObject FindFurnitureObject(string name, Database database)
-        {
-            foreach (var category in database.modelsDB)
-            {
-                var obj = category.objects.Find(o => o.name == name);
-                if (obj != null) return obj;
-            }
-            return null;
-        }
-
-        private void PopulateDataFromDatabase(FurnitureObject furnitureObject, FurnitureData data)
-        {
-            foreach (var morph in furnitureObject.morph)
-            {
-                data.parts[morph.label] = new PartData { morphInfo = morph };
-            }
-
-            foreach (var material in furnitureObject.materials)
-            {
-                if (material.typeInfo == null) continue;
-
-                foreach (var type in material.typeInfo)
-                {
-                    if (!string.IsNullOrEmpty(type.texture))
-                    {
-                        data.AddMaterial(
-                            material.label,
-                            new MaterialInfo
-                            {
-                                label = material.label,
-                                nameInModel = material.name_in_model,
-                                texture = Resources.Load<Texture2D>(CleanTexturePath(type.texture))
-                            }
-                        );
-                    }
-                }
-            }
-
-            if (furnitureObject.styles == null) return;
-
-            foreach (var style in furnitureObject.styles)
-            {
-                if (style.typeInfo == null) continue;
-
-                foreach (var type in style.typeInfo)
-                {
-                    data.AddStyle(
-                        style.label,
-                        style.types,
-                        new StyleInfo
-                        {
-                            label = type.label,
-                            nameInModel = type.name_in_model
-                        }
-                    );
-                }
-            }
-        }
-
-        private string CleanTexturePath(string path)
-        {
-            if (string.IsNullOrEmpty(path)) return path;
-
-            if (path.StartsWith("/"))
-                path = path.Substring(1);
-
-            if (path.EndsWith(".jpg") || path.EndsWith(".png"))
-                path = path.Substring(0, path.LastIndexOf('.'));
-
-            return path;
         }
 
         private void SaveMorphUVs(Transform parent, FurnitureData data)

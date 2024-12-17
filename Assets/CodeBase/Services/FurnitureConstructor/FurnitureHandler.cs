@@ -14,10 +14,15 @@ namespace CodeBase.Services.FurnitureConstructor
         private FurnitureFactory _furnitureFactory;
         private Furniture _currentFurniture;
         private List<Furniture> _furnitures = new List<Furniture>();
+        private FurnitureLoader _furnitureLoader;
 
         public void Initialize()
         {
-            _furnitureFactory = new FurnitureFactory();
+            // Загружаем базу один раз
+            _furnitureLoader = new FurnitureLoader();
+            _furnitureLoader.LoadDatabase();
+
+            _furnitureFactory = new FurnitureFactory(_furnitureLoader);
             furniturePanel.Initialize(Furnitures);
 
             furniturePanel.OnMaterialChange += ChangeMaterialCurrentFurniture;
@@ -30,7 +35,6 @@ namespace CodeBase.Services.FurnitureConstructor
         private void CreateFurniture(GameObject furniturePrefab)
         {
             var furniture = _furnitureFactory.CreateFurniture(furniturePrefab);
-
             if (furniture != null)
             {
                 Debug.Log("Мебель успешно создана!");
@@ -51,8 +55,7 @@ namespace CodeBase.Services.FurnitureConstructor
             _currentFurniture.ApplyNewMaterial(partName, selectedTextureName);
         }
 
-        private void ChangeStyleCurrentFurniture(FurnitureData data, string keyStyle, string nameStyle,
-            string nameInModel)
+        private void ChangeStyleCurrentFurniture(FurnitureData data, string keyStyle, string nameStyle, string nameInModel)
         {
             if (CheckData(data)) return;
 
@@ -68,12 +71,7 @@ namespace CodeBase.Services.FurnitureConstructor
 
         private bool CheckData(FurnitureData data)
         {
-            if (!ReferenceEquals(data, _currentFurniture.Data))
-            {
-                return true;
-            }
-
-            return false;
+            return !ReferenceEquals(data, _currentFurniture.Data);
         }
     }
 }
