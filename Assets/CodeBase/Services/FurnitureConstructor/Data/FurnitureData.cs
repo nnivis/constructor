@@ -121,8 +121,6 @@ namespace CodeBase.Services.FurnitureConstructor.Data
         public string nameInModel;
         public string texturePath;
         public string textureLabel;
-            //   public Texture2D texture;
-        
     }
 
     [Serializable]

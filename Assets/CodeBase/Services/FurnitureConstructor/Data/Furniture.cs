@@ -22,13 +22,7 @@ namespace CodeBase.Services.FurnitureConstructor.Data
         }
 
 
-        public void ApplyNewMaterial(string label, string textureName)
-        {
-        
-            _modifier.SetMaterialByLabel(Data, Prefab, label, textureName);
-            DebugFurnitureData();
-        }
-        
+        public void ApplyNewMaterial(string label, string textureName) => _modifier.SetMaterialByLabel(Data, Prefab, label, textureName);
 
         public void ApplyNewStyle( string key, string label) => _modifier.SetStyleByKeyAndLabel(Data, Prefab,  key, label);
 
@@ -38,8 +32,6 @@ namespace CodeBase.Services.FurnitureConstructor.Data
 
         private void DebugFurnitureData()
         {
-            Debug.Log("----------------------------------------------------------");
-
             if (Data == null)
             {
                 Debug.LogError("FurnitureData is null");

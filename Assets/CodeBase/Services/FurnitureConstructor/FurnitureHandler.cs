@@ -18,7 +18,6 @@ namespace CodeBase.Services.FurnitureConstructor
 
         public void Initialize()
         {
-            // Загружаем базу один раз
             _furnitureLoader = new FurnitureLoader();
             _furnitureLoader.LoadDatabase();
 

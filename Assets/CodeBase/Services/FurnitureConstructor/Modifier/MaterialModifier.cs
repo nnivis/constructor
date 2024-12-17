@@ -47,7 +47,6 @@ namespace CodeBase.Services.FurnitureConstructor.Modifier
         {
             var renderers = prefab.GetComponentsInChildren<SkinnedMeshRenderer>(true);
 
-            // Загружаем текстуру, если есть путь
             Texture2D texture = null;
             if (!string.IsNullOrEmpty(texturePath))
             {

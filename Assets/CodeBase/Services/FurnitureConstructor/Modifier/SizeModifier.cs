@@ -8,12 +8,14 @@ namespace CodeBase.Services.FurnitureConstructor.Modifier
         private float[] _sizes;
         private float[] _influences;
 
-        private Vector2[] _originalUVs; 
+        private Vector2[] _originalUVs;
 
-        public void InitializeSize(FurnitureData data, GameObject prefab) {
-            _sizes = new float[3] {
-                FindMorph(data, MorphType.Height)?.min ?? 0.72f, 
-                FindMorph(data, MorphType.Width)?.min ?? 1.52f, 
+        public void InitializeSize(FurnitureData data, GameObject prefab)
+        {
+            _sizes = new float[3]
+            {
+                FindMorph(data, MorphType.Height)?.min ?? 0.72f,
+                FindMorph(data, MorphType.Width)?.min ?? 1.52f,
                 FindMorph(data, MorphType.Depth)?.min ?? 0.91f
             };
 
@@ -47,12 +49,13 @@ namespace CodeBase.Services.FurnitureConstructor.Modifier
         {
             var renderer = prefab.GetComponentInChildren<SkinnedMeshRenderer>();
 
-            if (renderer != null && _originalUVs != null) {
+            if (renderer != null && _originalUVs != null)
+            {
                 var mesh = renderer.sharedMesh;
                 var scaledUVs = new Vector2[_originalUVs.Length];
 
-                for (var i = 0; i < _originalUVs.Length; i++) {
-                    // Масштабируем UV в зависимости от изменяемой оси
+                for (var i = 0; i < _originalUVs.Length; i++)
+                {
                     scaledUVs[i] = _originalUVs[i];
                     scaledUVs[i] *= type switch
                     {
@@ -68,7 +71,8 @@ namespace CodeBase.Services.FurnitureConstructor.Modifier
             }
         }
 
-        private void UpdateInfluences(FurnitureData data, GameObject prefab) {
+        private void UpdateInfluences(FurnitureData data, GameObject prefab)
+        {
             _influences = new float[3];
             for (int i = 0; i < 3; i++)
                 _influences[i] = data.SizeToInfluence(_sizes[i], data.start);
@@ -76,12 +80,16 @@ namespace CodeBase.Services.FurnitureConstructor.Modifier
             UpdateMorphInfluences(prefab);
         }
 
-        private void UpdateMorphInfluences(GameObject prefab) {
+        private void UpdateMorphInfluences(GameObject prefab)
+        {
             var renderers = prefab.GetComponentsInChildren<SkinnedMeshRenderer>(true);
-            foreach (var skinnedRenderer in renderers) {
-                if (skinnedRenderer.sharedMesh != null) {
+            foreach (var skinnedRenderer in renderers)
+            {
+                if (skinnedRenderer.sharedMesh != null)
+                {
                     var blendShapeCount = skinnedRenderer.sharedMesh.blendShapeCount;
-                    if (blendShapeCount >= 3) {
+                    if (blendShapeCount >= 3)
+                    {
                         for (int i = 0; i < 3; i++)
                             skinnedRenderer.SetBlendShapeWeight(i, _influences[i]);
                     }
@@ -101,8 +109,10 @@ namespace CodeBase.Services.FurnitureConstructor.Modifier
             return null;
         }
 
-        private int MorphTypeToIndex(MorphType type) {
-            return type switch {
+        private int MorphTypeToIndex(MorphType type)
+        {
+            return type switch
+            {
                 MorphType.Height => 0,
                 MorphType.Width => 1,
                 MorphType.Depth => 2,

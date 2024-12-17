@@ -156,7 +156,7 @@ namespace CodeBase.Services.FurnitureConstructor.View
 
         private void OnMaterialChanged(string partName, string selectedTextureName)
         {
-            Debug.Log($"Selected texture for part '{partName}': {selectedTextureName}");
+            //Debug.Log($"Selected texture for part '{partName}': {selectedTextureName}");
             OnMaterialChange?.Invoke(_currentFurniture, partName, selectedTextureName);
         }
 
