@@ -120,7 +120,8 @@ namespace CodeBase.Services.FurnitureConstructor.Data
         public string label;
         public string nameInModel;
         public string texturePath;
-        public Texture2D texture;
+        public string textureLabel;
+            //   public Texture2D texture;
         
     }
 

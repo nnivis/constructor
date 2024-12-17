@@ -22,7 +22,13 @@ namespace CodeBase.Services.FurnitureConstructor.Data
         }
 
 
-        public void ApplyNewMaterial(string label, string textureName) => _modifier.SetMaterialByLabel(Data, Prefab, label, textureName);
+        public void ApplyNewMaterial(string label, string textureName)
+        {
+        
+            _modifier.SetMaterialByLabel(Data, Prefab, label, textureName);
+            DebugFurnitureData();
+        }
+        
 
         public void ApplyNewStyle( string key, string label) => _modifier.SetStyleByKeyAndLabel(Data, Prefab,  key, label);
 
@@ -58,7 +64,7 @@ namespace CodeBase.Services.FurnitureConstructor.Data
                 foreach (var material in part.Value.materials)
                 {
                     sb.AppendLine(
-                        $"      Material: Label={material.label}, NameInModel={material.nameInModel}, Texture={(material.texture != null ? material.texture.name : "None")}");
+                        $"      Material: Label={material.label}, NameInModel={material.nameInModel}, TexturePath= {(material.texturePath)}, TextureLabel {(material.textureLabel)}");
                 }
 
                 sb.AppendLine("    Styles:");

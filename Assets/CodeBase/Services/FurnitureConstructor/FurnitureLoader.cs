@@ -152,7 +152,7 @@ namespace CodeBase.Services.FurnitureConstructor
                                     var texturePath = CleanTexturePath(type.texture);
                                     var loadedTexture = Resources.Load<Texture2D>(texturePath);
                                     Debug.Log(
-                                        $"Adding MaterialInfo: {material.label} with texture {loadedTexture?.name}");
+                                        $"Adding MaterialInfo: {material.label} with texture {loadedTexture?.name} and Texture Path {texturePath}");
 
                                     data.AddMaterial(
                                         material.label,
@@ -160,7 +160,9 @@ namespace CodeBase.Services.FurnitureConstructor
                                         {
                                             label = material.label,
                                             nameInModel = material.name_in_model,
-                                            texture = loadedTexture
+                                            texturePath = texturePath,
+                                            textureLabel = loadedTexture.name,
+                                            //texture = loadedTexture
                                         }
                                     );
                                 }

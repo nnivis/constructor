@@ -96,7 +96,7 @@ namespace CodeBase.Services.FurnitureConstructor.View
                 if (part.Value.materials?.Any() == true)
                 {
                     var options = part.Value.materials
-                        .Select(material => material.texture?.name ?? "None")
+                        .Select(material => material.textureLabel ?? "None")
                         .ToList();
 
                     materialSection.AddDropDownView(
