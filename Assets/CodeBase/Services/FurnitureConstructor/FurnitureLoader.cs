@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using UnityEngine;
+using System;
 
 namespace CodeBase.Services.FurnitureConstructor
 {
@@ -80,29 +81,16 @@ namespace CodeBase.Services.FurnitureConstructor
                 foreach (var obj in category.objects)
                 {
                     foreach (var material in obj.materials)
-                    {
                         // Связываем typeInfo, если указаны types
                         if (!string.IsNullOrEmpty(material.types) &&
                             typeInfoDictionary.TryGetValue(material.types, out var materialList))
-                        {
                             material.typeInfo = materialList;
-                        }
-
-                        // Отладка
-                        Debug.Log($"Material: {material.label}, NameInModel: {material.name_in_model}, Types: {material.types}");
-                    }
 
                     if (obj.styles != null)
-                    {
                         foreach (var style in obj.styles)
-                        {
                             if (!string.IsNullOrEmpty(style.types) &&
                                 typeInfoDictionary.TryGetValue(style.types, out var styleList))
-                            {
                                 style.typeInfo = styleList;
-                            }
-                        }
-                    }
                 }
             }
         }
@@ -183,7 +171,7 @@ namespace CodeBase.Services.FurnitureConstructor
                         {
                             foreach (var type in material.typeInfo)
                             {
-                                Debug.Log($"        Type: {type.label}, Texture: {type.texture}, NameInModel: {type.name_in_model}");
+                                //   Debug.Log($"        Type: {type.label}, Texture: {type.texture}, NameInModel: {type.name_in_model}");
                             }
                         }
                     }
@@ -207,31 +195,31 @@ namespace CodeBase.Services.FurnitureConstructor
         }
     }
 
-    [System.Serializable]
+    [Serializable]
     public class Database
     {
         public List<Category> modelsDB;
     }
 
-    [System.Serializable]
+    [Serializable]
     public class Category
     {
         public string category;
         public List<FurnitureObject> objects;
     }
 
-    [System.Serializable]
+    [Serializable]
     public class FurnitureObject
     {
         public string name;
         public string model;
         public float start;
         public List<Morph> morph;
-        public List<Material> materials;
+        public List<CustomMaterial> materials;
         public List<Style> styles;
     }
 
-    [System.Serializable]
+    [Serializable]
     public class Morph
     {
         public string label;
@@ -239,25 +227,20 @@ namespace CodeBase.Services.FurnitureConstructor
         public float max;
     }
 
-    [System.Serializable]
-    public class Material
-    {
-        public string label;
-        public string types;
-        public string name_in_model;
+    [Serializable] public class CustomMaterial {
+        public string label, types, name_in_model;
         public List<TypeInfo> typeInfo;
         public Texture2D texture;
     }
 
-    [System.Serializable]
+    [Serializable]
     public class Style
     {
-        public string label;
-        public string types;
+        public string label, types;
         public List<TypeInfo> typeInfo;
     }
 
-    [System.Serializable]
+    [Serializable]
     public class TypeInfo
     {
         public string label;

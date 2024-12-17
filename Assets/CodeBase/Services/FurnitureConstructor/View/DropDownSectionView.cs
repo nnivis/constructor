@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace CodeBase.Services.FurnitureConstructor.View
 {
@@ -11,12 +12,11 @@ namespace CodeBase.Services.FurnitureConstructor.View
         [SerializeField] private RectTransform container;
         private List<DropDownView> _dropDownViews = new List<DropDownView>();
 
-
         public void AddDropDownView(
             DropDownView dropDownViewPrefab,
             string labelText,
             List<string> options,
-            UnityEngine.Events.UnityAction<string> onValueChangedCallback)
+            UnityAction<string> onValueChangedCallback)
         {
             var dropDownView = Instantiate(dropDownViewPrefab, container);
             dropDownView.SetLabel(labelText);
@@ -24,8 +24,7 @@ namespace CodeBase.Services.FurnitureConstructor.View
 
             dropDownView.AddOnValueChangedListener(index =>
             {
-                var selectedOption = options[index];
-                onValueChangedCallback?.Invoke(selectedOption);
+                onValueChangedCallback?.Invoke(options[index]);
             });
 
             _dropDownViews.Add(dropDownView);
@@ -46,10 +45,6 @@ namespace CodeBase.Services.FurnitureConstructor.View
             if (dropDownIndex >= 0 && dropDownIndex < _dropDownViews.Count)
             {
                 _dropDownViews[dropDownIndex].SetSelectedValue(value);
-            }
-            else
-            {
-                Debug.LogWarning($"DropDownView at index {dropDownIndex} does not exist.");
             }
         }
     }

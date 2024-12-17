@@ -16,16 +16,17 @@ namespace CodeBase.Services.FurnitureConstructor.Data
             Data = data;
             _modifier = modifier;
 
-            StartInitializeModifier();
-            
+            _modifier.SetStartModifier(Data, gameObject);
+
             DebugFurnitureData();
         }
 
-        private void StartInitializeModifier()
-        {
-            _modifier.SetStartModifier(Data, gameObject);
-            _modifier.SetStartSize(Data, Prefab);
-        }
+
+        public void ApplyNewMaterial(string label, string textureName) => _modifier.SetMaterialByLabel(Data, Prefab, label, textureName);
+
+        public void ApplyNewStyle( string key, string label) => _modifier.SetStyleByKeyAndLabel(Data, Prefab,  key, label);
+
+        public void ApplyNewSize(MorphType type, float value) => _modifier.SetSize(Data, Prefab, type, value);
 
         public Vector2[] GetUV(MorphType type, string objectName) => Data.GetUV(type, objectName);
 

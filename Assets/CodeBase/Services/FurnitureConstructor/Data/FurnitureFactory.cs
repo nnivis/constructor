@@ -10,36 +10,30 @@ namespace CodeBase.Services.FurnitureConstructor.Data
         private const string Width = "width";
         private const string Depth = "depth";
 
-        private readonly TextureData.TextureData _textureData;
         private readonly Database _database;
-        private Modifier.Modifier _modifier;
+        private readonly Modifier.Modifier _modifier;
 
         public FurnitureFactory()
         {
             var furnitureLoader = new FurnitureLoader();
             _database = furnitureLoader.LoadDatabase();
-
             _modifier = new Modifier.Modifier();
         }
 
         public Furniture CreateFurniture(GameObject prefab)
         {
-            if (prefab == null)
-            {
-                Debug.LogError("Prefab is null");
-                return null;
-            }
+            if (prefab == null) return null;
 
             var furnitureName = prefab.name;
-
             var furnitureObject = FindFurnitureObject(furnitureName, _database);
-            if (furnitureObject == null)
-            {
-                Debug.LogWarning($"Furniture '{furnitureName}' not found in database.");
-                return null;
-            }
 
-            var data = new FurnitureData {name = furnitureObject.name, start = furnitureObject.start};
+            if (furnitureObject == null) return null;
+
+            var data = new FurnitureData
+            {
+                name = furnitureObject.name,
+                start = furnitureObject.start
+            };
 
             PopulateDataFromDatabase(furnitureObject, data);
             SaveMorphUVs(prefab.transform, data);
@@ -55,13 +49,9 @@ namespace CodeBase.Services.FurnitureConstructor.Data
         {
             foreach (var category in database.modelsDB)
             {
-                foreach (var obj in category.objects)
-                {
-                    if (obj.name == name)
-                        return obj;
-                }
+                var obj = category.objects.Find(o => o.name == name);
+                if (obj != null) return obj;
             }
-
             return null;
         }
 
@@ -69,68 +59,55 @@ namespace CodeBase.Services.FurnitureConstructor.Data
         {
             foreach (var morph in furnitureObject.morph)
             {
-                data.parts[morph.label] = new PartData {morphInfo = morph};
+                data.parts[morph.label] = new PartData { morphInfo = morph };
             }
 
             foreach (var material in furnitureObject.materials)
             {
-//                Debug.Log($"Processing material: {material.label}");
+                if (material.typeInfo == null) continue;
 
-                if (material.typeInfo != null)
+                foreach (var type in material.typeInfo)
                 {
-                    //Debug.Log($"Material '{material.label}' has {material.typeInfo.Count} typeInfo entries.");
-
-                    foreach (var type in material.typeInfo)
+                    if (!string.IsNullOrEmpty(type.texture))
                     {
-                        Texture2D currentTexture = null;
-                        if (!string.IsNullOrEmpty(type.texture))
-                        {
-                            var cleanedPath = CleanTexturePath(type.texture);
-                            currentTexture = Resources.Load<Texture2D>(cleanedPath);
-                        }
-
-//                        Debug.Log(
-                        //                          $"TypeInfo for material '{material.label}': Label: {type.label}, NameInModel: {type.name_in_model}, Texture: {type.texture}");
-
-                        var materialInfo = new MaterialInfo
-                        {
-                            label = material.label,
-                            nameInModel = material.name_in_model,
-                            texture = currentTexture
-                        };
-
-                        data.AddMaterial(material.label, materialInfo);
+                        data.AddMaterial(
+                            material.label,
+                            new MaterialInfo
+                            {
+                                label = material.label,
+                                nameInModel = material.name_in_model,
+                                texture = Resources.Load<Texture2D>(CleanTexturePath(type.texture))
+                            }
+                        );
                     }
                 }
             }
 
-            if (furnitureObject.styles != null)
+            if (furnitureObject.styles == null) return;
+
+            foreach (var style in furnitureObject.styles)
             {
-                foreach (var style in furnitureObject.styles)
+                if (style.typeInfo == null) continue;
+
+                foreach (var type in style.typeInfo)
                 {
-                    if (style.typeInfo != null)
-                    {
-                        foreach (var type in style.typeInfo)
+                    data.AddStyle(
+                        style.label,
+                        style.types,
+                        new StyleInfo
                         {
-                            var styleInfo = new StyleInfo
-                            {
-                                label = type.label,
-                                nameInModel = type.name_in_model
-                            };
-
-                            string styleKey = style.types;
-                            data.AddStyle(style.label, styleKey, styleInfo);
-
-//                            Debug.Log(
-                            //                              $"Added StyleInfo: Key: {styleKey}, Label: {styleInfo.label}, NameInModel: {styleInfo.nameInModel}");
+                            label = type.label,
+                            nameInModel = type.name_in_model
                         }
-                    }
+                    );
                 }
             }
         }
 
         private string CleanTexturePath(string path)
         {
+            if (string.IsNullOrEmpty(path)) return path;
+
             if (path.StartsWith("/"))
                 path = path.Substring(1);
 
@@ -144,43 +121,41 @@ namespace CodeBase.Services.FurnitureConstructor.Data
         {
             foreach (Transform child in parent)
             {
-                if (child.name.ToLower().Contains(Morph))
+                if (!child.name.ToLower().Contains(Morph)) continue;
+
+                if (child.childCount > 0)
                 {
-                    if (child.childCount > 0)
+                    foreach (Transform subChild in child)
                     {
-                        foreach (Transform subChild in child)
-                        {
-                            SaveUV(subChild, data);
-                        }
+                        SaveUV(subChild, data);
                     }
-                    else
-                    {
-                        SaveUV(child, data);
-                    }
+                }
+                else
+                {
+                    SaveUV(child, data);
                 }
             }
         }
 
         private void SaveUV(Transform obj, FurnitureData data)
         {
-            MeshFilter meshFilter = obj.GetComponent<MeshFilter>();
-            if (meshFilter != null && meshFilter.sharedMesh != null)
+            var meshFilter = obj.GetComponent<MeshFilter>();
+            if (meshFilter?.sharedMesh == null) return;
+
+            string name = obj.name;
+            MorphType? morphType = GetMorphType(name);
+            if (morphType.HasValue)
             {
-                string name = obj.name;
-                MorphType? morphType = GetMorphType(name);
-                if (morphType.HasValue)
-                {
-                    data.AddUV(morphType.Value, name, meshFilter.sharedMesh.uv);
-                    // Debug.Log($"Saved UV for {name} with type {morphType.Value}");
-                }
+                data.AddUV(morphType.Value, name, meshFilter.sharedMesh.uv);
             }
         }
 
         private MorphType? GetMorphType(string name)
         {
-            if (name.ToLower().Contains(Height)) return MorphType.Height;
-            if (name.ToLower().Contains(Width)) return MorphType.Width;
-            if (name.ToLower().Contains(Depth)) return MorphType.Depth;
+            var lowerName = name.ToLower();
+            if (lowerName.Contains(Height)) return MorphType.Height;
+            if (lowerName.Contains(Width)) return MorphType.Width;
+            if (lowerName.Contains(Depth)) return MorphType.Depth;
             return null;
         }
 

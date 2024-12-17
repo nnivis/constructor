@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using CodeBase.Services.FurnitureConstructor.Data;
 using UnityEngine;
@@ -7,18 +8,26 @@ namespace CodeBase.Services.FurnitureConstructor.View
 {
     public class FurniturePanel : MonoBehaviour
     {
-        [Header("Section")] [SerializeField] private DropDownSectionView modelSection;
+        public event Action<FurnitureData, string, string, string> OnStyleChange;
+        public event Action<FurnitureData, string, string> OnMaterialChange;
+        public event Action<FurnitureData, MorphType, float> OnSizeChange;
 
+        [Header("Section")] 
+        [SerializeField] private DropDownSectionView modelSection;
         [SerializeField] private SliderSectionView sizeSection;
         [SerializeField] private DropDownSectionView materialSection;
         [SerializeField] private DropDownSectionView stylesSection;
 
-        [Header("Prefab")] [SerializeField] private DropDownView dropDownViewPrefab;
+        [Header("Prefab")] 
+        [SerializeField] private DropDownView dropDownViewPrefab;
 
         private IEnumerable<Furniture> _furnitures;
         private FurnitureData _currentFurniture;
 
-        public void Initialize(IEnumerable<Furniture> furnitures) => _furnitures = furnitures;
+        public void Initialize(IEnumerable<Furniture> furnitures)
+        {
+            _furnitures = furnitures;
+        }
 
         public void UpdateSection()
         {
@@ -36,17 +45,28 @@ namespace CodeBase.Services.FurnitureConstructor.View
 
         private void UpdateSizeSection()
         {
-            
+            if (_currentFurniture == null) return;
+
+            var morphes = _currentFurniture.parts.Values.Select(p => p.morphInfo).ToList();
+            var heightMorph = morphes.FirstOrDefault(m => m.label == "Height");
+            var widthMorph = morphes.FirstOrDefault(m => m.label == "Width");
+            var depthMorph = morphes.FirstOrDefault(m => m.label == "Depth");
+
+            sizeSection.InitializeSliders(
+                heightMorph?.min ?? 0.5f, heightMorph?.max ?? 2f,
+                widthMorph?.min ?? 0.5f, widthMorph?.max ?? 2f,
+                depthMorph?.min ?? 0.5f, depthMorph?.max ?? 2f
+            );
+
+            sizeSection.OnSizeChanged -= OnSizeChanged; // Удаление старых подписок
+            sizeSection.OnSizeChanged += OnSizeChanged;
         }
 
         private void UpdateModelSection()
         {
             modelSection.Clear();
 
-            if (_furnitures == null || !_furnitures.Any())
-            {
-                return;
-            }
+            if (_furnitures == null || !_furnitures.Any()) return;
 
             var furnitureNames = _furnitures.Select(f => f.Prefab.name).ToList();
 
@@ -57,35 +77,26 @@ namespace CodeBase.Services.FurnitureConstructor.View
                 OnModelChanged
             );
 
-            int lastIndex = furnitureNames.Count - 1;
-
-            modelSection.SetSelectedValue(lastIndex, furnitureNames.Last());
+            modelSection.SetSelectedValue(furnitureNames.Count - 1, furnitureNames.Last());
         }
 
         private void UpdateCurrentFurniture()
         {
-            if (_furnitures != null && _furnitures.Any())
-            {
-                var lastFurniture = _furnitures.Last();
-                _currentFurniture = lastFurniture.Data;
-            }
+            _currentFurniture = _furnitures?.LastOrDefault()?.Data;
         }
 
         private void UpdateMaterialSection()
         {
             materialSection.Clear();
 
-            if (_currentFurniture == null || _currentFurniture.parts == null || !_currentFurniture.parts.Any())
-            {
-                return;
-            }
+            if (_currentFurniture?.parts == null) return;
 
             foreach (var part in _currentFurniture.parts)
             {
-                if (part.Value.materials != null && part.Value.materials.Any())
+                if (part.Value.materials?.Any() == true)
                 {
                     var options = part.Value.materials
-                        .Select(material => material.texture != null ? material.texture.name : "None")
+                        .Select(material => material.texture?.name ?? "None")
                         .ToList();
 
                     materialSection.AddDropDownView(
@@ -104,10 +115,7 @@ namespace CodeBase.Services.FurnitureConstructor.View
         {
             stylesSection.Clear();
 
-            if (_currentFurniture == null || _currentFurniture.parts == null)
-            {
-                return;
-            }
+            if (_currentFurniture?.parts == null) return;
 
             foreach (var part in _currentFurniture.parts)
             {
@@ -130,33 +138,31 @@ namespace CodeBase.Services.FurnitureConstructor.View
                 }
             }
         }
-        
+
         private void OnModelChanged(string selectedModelName)
         {
-            var selectedFurniture = _furnitures.FirstOrDefault(f => f.Prefab.name == selectedModelName);
+            var selectedFurniture = _furnitures?.FirstOrDefault(f => f.Prefab.name == selectedModelName);
             if (selectedFurniture != null)
             {
                 _currentFurniture = selectedFurniture.Data;
                 Debug.Log($"Selected furniture: {selectedModelName}");
-                UpdateMaterialSection();
+                UpdateModifierSection();
             }
             else
             {
-                Debug.LogWarning($"Furniture with name {selectedModelName} not found.");
+                Debug.LogWarning($"Furniture with name '{selectedModelName}' not found.");
             }
         }
 
         private void OnMaterialChanged(string partName, string selectedTextureName)
         {
             Debug.Log($"Selected texture for part '{partName}': {selectedTextureName}");
+            OnMaterialChange?.Invoke(_currentFurniture, partName, selectedTextureName);
         }
 
         private void OnStyleChanged(string styleKey, string selectedStyleLabel)
         {
-            if (_currentFurniture == null || _currentFurniture.parts == null)
-            {
-                return;
-            }
+            if (_currentFurniture?.parts == null) return;
 
             foreach (var part in _currentFurniture.parts)
             {
@@ -166,11 +172,18 @@ namespace CodeBase.Services.FurnitureConstructor.View
 
                     if (selectedStyle != null)
                     {
-                        Debug.Log($"Selected style: Key={styleKey}, Label={selectedStyle.label}, NameInModel={selectedStyle.nameInModel}");
+                        Debug.Log(
+                            $"Selected style: Key={styleKey}, Label={selectedStyle.label}, NameInModel={selectedStyle.nameInModel}");
+                        OnStyleChange?.Invoke(_currentFurniture, styleKey, selectedStyle.label, selectedStyle.nameInModel);
                         return;
                     }
                 }
             }
+        }
+
+        private void OnSizeChanged(MorphType type, float value)
+        {
+            OnSizeChange?.Invoke(_currentFurniture, type, value);
         }
     }
 }

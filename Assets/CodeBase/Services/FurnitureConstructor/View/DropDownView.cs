@@ -9,11 +9,7 @@ namespace CodeBase.Services.FurnitureConstructor.View
         [SerializeField] private TMP_Dropdown dropdown;
         [SerializeField] private TextMeshProUGUI label;
 
-        public void SetLabel(string text)
-        {
-            if (label != null)
-                label.text = text;
-        }
+        public void SetLabel(string text) { if (label != null) label.text = text; }
 
         public void SetOptions(List<string> options)
         {
@@ -35,8 +31,7 @@ namespace CodeBase.Services.FurnitureConstructor.View
             if (dropdown != null)
             {
                 var index = dropdown.options.FindIndex(option => option.text == value);
-                if (index >= 0)
-                {
+                if (index >= 0) {
                     dropdown.SetValueWithoutNotify(index);
                 }
             }

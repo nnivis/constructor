@@ -1,5 +1,5 @@
-﻿using UnityEngine;
-using CodeBase.Services.FurnitureConstructor.Data;
+﻿using CodeBase.Services.FurnitureConstructor.Data;
+using UnityEngine;
 
 namespace CodeBase.Services.FurnitureConstructor.Modifier
 {
@@ -16,13 +16,20 @@ namespace CodeBase.Services.FurnitureConstructor.Modifier
             _materialModifier = new MaterialModifier();
         }
 
-        public void SetStartModifier(FurnitureData data, GameObject prefab) => _styleModifier.SetStartStyle(data, prefab);
+        public void SetStartModifier(FurnitureData data, GameObject prefab)
+        {
+            _styleModifier.InitializeStyle(data, prefab);
+            _sizeModifier.InitializeSize(data, prefab);
+            _materialModifier.InitializeMaterial(data, prefab);
+        }
+
+        public void SetMaterialByLabel(FurnitureData data, GameObject prefab, string label, string textureName) =>
+            _materialModifier.SetMaterialByLabel(data, prefab, label, textureName);
 
         public void SetStyleByKeyAndLabel(FurnitureData data, GameObject prefab, string styleKey, string styleLabel) =>
             _styleModifier.SetStyleByKeyAndLabel(data, prefab, styleKey, styleLabel);
 
-        public void SetStartSize(FurnitureData data, GameObject prefab) => _sizeModifier.InitializeSize(data, prefab);
-
-        public void SetSize(FurnitureData data, GameObject prefab, MorphType type, float newValue) => _sizeModifier.SetSize(data, prefab, type, newValue);
+        public void SetSize(FurnitureData data, GameObject prefab, MorphType type, float newValue) =>
+            _sizeModifier.SetSize(data, prefab, type, newValue);
     }
 }

@@ -25,10 +25,8 @@ namespace CodeBase.Services.FurnitureConstructor.Data
         public float SizeToInfluence(float size, float startValueInMeters)
         {
             float startInches = startValueInMeters * 39.37f;
-            float inches = size * 39.37f;
-            float influence = (startInches - inches) / (startInches - 300f);
 
-            return influence;
+            return (startInches - size * 39.37f) / (startInches - 300f);
         }
 
 
@@ -42,13 +40,9 @@ namespace CodeBase.Services.FurnitureConstructor.Data
 
         public Vector2[] GetUV(MorphType type, string objectName)
         {
-            if (morphUVs.TryGetValue(type, out var uvDict) && uvDict.TryGetValue(objectName, out var uv))
-            {
-                return uv;
-            }
-
-            Debug.LogWarning($"UV not found for {objectName} with type {type}");
-            return null;
+            return (morphUVs.TryGetValue(type, out var uvDict) && uvDict.TryGetValue(objectName, out var uv))
+                ? uv
+                : null;
         }
 
         public void AddMaterial(string partName, MaterialInfo material)
@@ -61,27 +55,14 @@ namespace CodeBase.Services.FurnitureConstructor.Data
 
         public void AddStyle(string partName, string styleKey, StyleInfo style)
         {
-            if (!parts.ContainsKey(partName))
-            {
-                parts[partName] = new PartData();
-            }
+            if (!parts.ContainsKey(partName)) parts[partName] = new PartData();
 
-            if (!parts[partName].styles.ContainsKey(styleKey))
-            {
-                parts[partName].styles[styleKey] = new List<StyleInfo>();
-            }
+            if (!parts[partName].styles.ContainsKey(styleKey)) parts[partName].styles[styleKey] = new List<StyleInfo>();
 
             if (!parts[partName].styles[styleKey].Any(existingStyle =>
                     existingStyle.label == style.label &&
                     existingStyle.nameInModel == style.nameInModel))
-            {
                 parts[partName].styles[styleKey].Add(style);
-//                Debug.Log($"Added new style: Key='{styleKey}', Label='{style.label}', NameInModel='{style.nameInModel}'.");
-            }
-            else
-            {
-                //              Debug.LogWarning($"Style already exists: Key='{styleKey}', Label='{style.label}', NameInModel='{style.nameInModel}'.");
-            }
         }
     }
 

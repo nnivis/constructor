@@ -1,5 +1,5 @@
-﻿using CodeBase.Services.FurnitureConstructor.Data;
-using UnityEngine;
+﻿using UnityEngine;
+using CodeBase.Services.FurnitureConstructor.Data;
 
 namespace CodeBase.Services.FurnitureConstructor.Modifier
 {
@@ -7,19 +7,17 @@ namespace CodeBase.Services.FurnitureConstructor.Modifier
     {
         private float[] _sizes;
         private float[] _influences;
-        
-        public void InitializeSize(FurnitureData data, GameObject prefab)
-        {
-            Morph heightMorph = FindMorph(data, MorphType.Height);
-            Morph widthMorph = FindMorph(data, MorphType.Width);
-            Morph depthMorph = FindMorph(data, MorphType.Depth);
 
-            float height = heightMorph != null ? heightMorph.min : 0.72f;
-            float width = widthMorph != null ? widthMorph.min : 1.52f;
-            float depth = depthMorph != null ? depthMorph.min : 0.91f;
+        private Vector2[] _originalUVs; 
 
-            _sizes = new float[3] {height, width, depth};
+        public void InitializeSize(FurnitureData data, GameObject prefab) {
+            _sizes = new float[3] {
+                FindMorph(data, MorphType.Height)?.min ?? 0.72f, 
+                FindMorph(data, MorphType.Width)?.min ?? 1.52f, 
+                FindMorph(data, MorphType.Depth)?.min ?? 0.91f
+            };
 
+            SaveOriginalUVs(prefab);
             UpdateInfluences(data, prefab);
         }
 
@@ -33,35 +31,59 @@ namespace CodeBase.Services.FurnitureConstructor.Modifier
             {
                 _sizes[index] = newValue;
                 UpdateInfluences(data, prefab);
+
+                UpdateUVs(prefab, type, newValue);
             }
         }
 
-        private void UpdateInfluences(FurnitureData data, GameObject prefab)
+        private void SaveOriginalUVs(GameObject prefab)
         {
+            var renderer = prefab.GetComponentInChildren<SkinnedMeshRenderer>();
+            if (renderer != null && renderer.sharedMesh != null)
+                _originalUVs = renderer.sharedMesh.uv;
+        }
+
+        private void UpdateUVs(GameObject prefab, MorphType type, float scale)
+        {
+            var renderer = prefab.GetComponentInChildren<SkinnedMeshRenderer>();
+
+            if (renderer != null && _originalUVs != null) {
+                var mesh = renderer.sharedMesh;
+                var scaledUVs = new Vector2[_originalUVs.Length];
+
+                for (var i = 0; i < _originalUVs.Length; i++) {
+                    // Масштабируем UV в зависимости от изменяемой оси
+                    scaledUVs[i] = _originalUVs[i];
+                    scaledUVs[i] *= type switch
+                    {
+                        MorphType.Width => new Vector2(scale, 1),
+                        MorphType.Height => new Vector2(1, scale),
+                        MorphType.Depth => new Vector2(scale, scale),
+                        _ => Vector2.one
+                    };
+                }
+
+                mesh.uv = scaledUVs;
+                renderer.sharedMesh = mesh;
+            }
+        }
+
+        private void UpdateInfluences(FurnitureData data, GameObject prefab) {
             _influences = new float[3];
-            _influences[0] = data.SizeToInfluence(_sizes[0], data.start);
-            _influences[1] = data.SizeToInfluence(_sizes[1], data.start);
-            _influences[2] = data.SizeToInfluence(_sizes[2], data.start);
+            for (int i = 0; i < 3; i++)
+                _influences[i] = data.SizeToInfluence(_sizes[i], data.start);
 
             UpdateMorphInfluences(prefab);
         }
 
-        private void UpdateMorphInfluences(GameObject prefab)
-        {
+        private void UpdateMorphInfluences(GameObject prefab) {
             var renderers = prefab.GetComponentsInChildren<SkinnedMeshRenderer>(true);
-            foreach (var skinnedRenderer in renderers)
-            {
-                if (skinnedRenderer.sharedMesh != null)
-                {
-                    int blendShapeCount = skinnedRenderer.sharedMesh.blendShapeCount;
-                    if (blendShapeCount >= 3)
-                    {
-                        //Debug.Log(
-                          //  $"Applying BlendShapes: Height={_influences[0]}, Width={_influences[1]}, Depth={_influences[2]}");
-
-                        skinnedRenderer.SetBlendShapeWeight(0, _influences[0]);
-                        skinnedRenderer.SetBlendShapeWeight(1, _influences[1]);
-                        skinnedRenderer.SetBlendShapeWeight(2, _influences[2]);
+            foreach (var skinnedRenderer in renderers) {
+                if (skinnedRenderer.sharedMesh != null) {
+                    var blendShapeCount = skinnedRenderer.sharedMesh.blendShapeCount;
+                    if (blendShapeCount >= 3) {
+                        for (int i = 0; i < 3; i++)
+                            skinnedRenderer.SetBlendShapeWeight(i, _influences[i]);
                     }
                 }
             }
@@ -73,27 +95,19 @@ namespace CodeBase.Services.FurnitureConstructor.Modifier
             {
                 if (part.morphInfo != null &&
                     part.morphInfo.label.Equals(type.ToString(), System.StringComparison.OrdinalIgnoreCase))
-                {
                     return part.morphInfo;
-                }
             }
 
             return null;
         }
 
-        private int MorphTypeToIndex(MorphType type)
-        {
-            switch (type)
-            {
-                case MorphType.Height:
-                    return 0;
-                case MorphType.Width:
-                    return 1;
-                case MorphType.Depth:
-                    return 2;
-                default:
-                    return -1;
-            }
+        private int MorphTypeToIndex(MorphType type) {
+            return type switch {
+                MorphType.Height => 0,
+                MorphType.Width => 1,
+                MorphType.Depth => 2,
+                _ => -1
+            };
         }
     }
 }
