@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using CodeBase.Services.FurnitureConstructor.Data;
+using System.Collections.Generic;
 
 namespace CodeBase.Services.FurnitureConstructor.Modifier
 {
@@ -8,7 +9,7 @@ namespace CodeBase.Services.FurnitureConstructor.Modifier
         private float[] _sizes;
         private float[] _influences;
 
-        private Vector2[] _originalUVs;
+        private Dictionary<SkinnedMeshRenderer, Vector2[]> _originalUVsDict;
 
         public void InitializeSize(FurnitureData data, GameObject prefab)
         {
@@ -20,6 +21,7 @@ namespace CodeBase.Services.FurnitureConstructor.Modifier
             };
 
             SaveOriginalUVs(prefab);
+
             UpdateInfluences(data, prefab);
         }
 
@@ -34,40 +36,65 @@ namespace CodeBase.Services.FurnitureConstructor.Modifier
                 _sizes[index] = newValue;
                 UpdateInfluences(data, prefab);
 
-                UpdateUVs(prefab, type, newValue);
+                UpdateUVs(data, prefab); // Передаем data и prefab
             }
         }
 
         private void SaveOriginalUVs(GameObject prefab)
         {
-            var renderer = prefab.GetComponentInChildren<SkinnedMeshRenderer>();
-            if (renderer != null && renderer.sharedMesh != null)
-                _originalUVs = renderer.sharedMesh.uv;
+            _originalUVsDict = new Dictionary<SkinnedMeshRenderer, Vector2[]>();
+            var renderers = prefab.GetComponentsInChildren<SkinnedMeshRenderer>();
+            foreach (var renderer in renderers)
+            {
+                if (renderer.sharedMesh != null)
+                {
+                    _originalUVsDict[renderer] = (Vector2[])renderer.sharedMesh.uv.Clone();
+                }
+            }
         }
 
-        private void UpdateUVs(GameObject prefab, MorphType type, float scale)
+        private void UpdateUVs(FurnitureData data, GameObject prefab)
         {
-            var renderer = prefab.GetComponentInChildren<SkinnedMeshRenderer>();
-
-            if (renderer != null && _originalUVs != null)
+            var renderers = prefab.GetComponentsInChildren<SkinnedMeshRenderer>();
+            foreach (var renderer in renderers)
             {
-                var mesh = renderer.sharedMesh;
-                var scaledUVs = new Vector2[_originalUVs.Length];
-
-                for (var i = 0; i < _originalUVs.Length; i++)
+                if (renderer.sharedMesh != null && _originalUVsDict.TryGetValue(renderer, out var originalUVs))
                 {
-                    scaledUVs[i] = _originalUVs[i];
-                    scaledUVs[i] *= type switch
-                    {
-                        MorphType.Width => new Vector2(scale, 1),
-                        MorphType.Height => new Vector2(1, scale),
-                        MorphType.Depth => new Vector2(scale, scale),
-                        _ => Vector2.one
-                    };
-                }
+                    Vector2[] newUVs = (Vector2[])originalUVs.Clone();
 
-                mesh.uv = scaledUVs;
-                renderer.sharedMesh = mesh;
+                    foreach (MorphType type in System.Enum.GetValues(typeof(MorphType)))
+                    {
+                        int index = MorphTypeToIndex(type);
+                        float influence = _influences[index];
+
+                        if (influence == 0f)
+                            continue;
+
+                        string objectName = renderer.gameObject.name;
+                        Vector2[] morphUVs = data.GetUV(type, objectName);
+
+                        if (morphUVs != null && morphUVs.Length == newUVs.Length)
+                        {
+                            for (int i = 0; i < newUVs.Length; i++)
+                            {
+                                newUVs[i] += (morphUVs[i] - originalUVs[i]) * influence;
+                            }
+                        }
+                        else
+                        {
+                            Debug.LogWarning($"Morph UVs not found or length mismatch for {type} on {objectName}");
+                        }
+                    }
+
+                 
+                    Mesh updatedMesh = Object.Instantiate(renderer.sharedMesh);
+                    updatedMesh.name = renderer.sharedMesh.name + "_UpdatedUVs";
+                    updatedMesh.uv = newUVs;
+                    updatedMesh.RecalculateBounds();
+
+                    // Назначаем обновленный Mesh
+                    renderer.sharedMesh = updatedMesh;
+                }
             }
         }
 
@@ -91,7 +118,7 @@ namespace CodeBase.Services.FurnitureConstructor.Modifier
                     if (blendShapeCount >= 3)
                     {
                         for (int i = 0; i < 3; i++)
-                            skinnedRenderer.SetBlendShapeWeight(i, _influences[i]);
+                            skinnedRenderer.SetBlendShapeWeight(i, _influences[i] ); // BlendShape веса в Unity от 0 до 100
                     }
                 }
             }
@@ -99,7 +126,7 @@ namespace CodeBase.Services.FurnitureConstructor.Modifier
 
         private Morph FindMorph(FurnitureData data, MorphType type)
         {
-            foreach (var part in data.parts.Values)
+            foreach (var part in data.Parts.Values)
             {
                 if (part.morphInfo != null &&
                     part.morphInfo.label.Equals(type.ToString(), System.StringComparison.OrdinalIgnoreCase))

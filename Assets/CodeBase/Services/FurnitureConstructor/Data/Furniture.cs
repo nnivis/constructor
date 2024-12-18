@@ -1,3 +1,4 @@
+using System.Data;
 using System.Text;
 using UnityEngine;
 
@@ -43,7 +44,7 @@ namespace CodeBase.Services.FurnitureConstructor.Data
             sb.AppendLine($"Start Value: {Data.start}");
             sb.AppendLine("Parts:");
 
-            foreach (var part in Data.parts)
+            foreach (var part in Data.Parts)
             {
                 sb.AppendLine($"  Part Name: {part.Key}");
                 if (part.Value.morphInfo != null)
@@ -71,7 +72,7 @@ namespace CodeBase.Services.FurnitureConstructor.Data
             }
 
             sb.AppendLine("Morph UVs:");
-            foreach (var morphType in Data.morphUVs)
+            foreach (var morphType in Data.MorphUVs)
             {
                 sb.AppendLine($"  Morph Type: {morphType.Key}");
                 foreach (var uv in morphType.Value)

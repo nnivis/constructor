@@ -11,7 +11,7 @@ namespace CodeBase.Services.FurnitureConstructor.Modifier
 
         public void InitializeStyle(FurnitureData data, GameObject prefab)
         {
-            if (data?.parts == null || prefab == null)
+            if (data?.Parts == null || prefab == null)
             {
                 return;
             }
@@ -20,7 +20,7 @@ namespace CodeBase.Services.FurnitureConstructor.Modifier
             var allNameInModels = new HashSet<string>();
             var activeNameInModels = new HashSet<string>();
 
-            foreach (var part in data.parts)
+            foreach (var part in data.Parts)
             {
                 foreach (var styleEntry in part.Value.styles)
                 {
@@ -33,7 +33,7 @@ namespace CodeBase.Services.FurnitureConstructor.Modifier
                     {
                         var startStyle = styleEntry.Value[0];
                         activeNameInModels.Add(startStyle.nameInModel);
-                        _activeStyles[styleEntry.Key] = startStyle.label; // Сохраняем стартовый стиль
+                        _activeStyles[styleEntry.Key] = startStyle.label; 
                     }
                 }
             }
@@ -43,18 +43,17 @@ namespace CodeBase.Services.FurnitureConstructor.Modifier
 
         public void SetStyleByKeyAndLabel(FurnitureData data, GameObject prefab, string styleKey, string styleLabel)
         {
-            if (data?.parts == null || prefab == null)
+            if (data?.Parts == null || prefab == null)
             {
                 return;
             }
 
-            // Обновляем текущий стиль для данной группы
             _activeStyles[styleKey] = styleLabel;
 
             var allNameInModels = new HashSet<string>();
             var activeNameInModels = new HashSet<string>();
 
-            foreach (var part in data.parts)
+            foreach (var part in data.Parts)
             {
                 foreach (var styleEntry in part.Value.styles)
                 {
@@ -62,7 +61,6 @@ namespace CodeBase.Services.FurnitureConstructor.Modifier
                     {
                         allNameInModels.Add(styleInfo.nameInModel);
 
-                        // Если стиль из активной группы совпадает, добавляем его как активный
                         if (_activeStyles.TryGetValue(styleEntry.Key, out var activeLabel) &&
                             styleInfo.label == activeLabel)
                         {
@@ -82,14 +80,12 @@ namespace CodeBase.Services.FurnitureConstructor.Modifier
             {
                 string childName = child.name;
 
-                // Проверка, присутствует ли имя в модели среди всех стилей
                 if (allNameInModels.Any(nameInModel => childName.Contains(nameInModel)))
                 {
                     bool isActive = activeNameInModels.Any(activeName => childName.Contains(activeName));
                     child.gameObject.SetActive(isActive);
                 }
 
-                // Рекурсивный вызов для детей
                 if (child.childCount > 0)
                 {
                     ApplyStyleToChildren(child.gameObject, allNameInModels, activeNameInModels);

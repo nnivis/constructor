@@ -14,13 +14,12 @@ namespace CodeBase.Services.FurnitureConstructor.Data
     public class Category
     {
         public string category;
-        public List<FurnitureData> objects; 
+        public List<FurnitureData> objects;
     }
 
     [Serializable]
     public class FurnitureData
     {
-     
         public string name;
         public string model;
         public float start;
@@ -28,11 +27,9 @@ namespace CodeBase.Services.FurnitureConstructor.Data
         public List<CustomMaterial> materials;
         public List<Style> styles;
 
-        [NonSerialized]
-        public Dictionary<string, PartData> parts = new Dictionary<string, PartData>();
+        [NonSerialized] public Dictionary<string, PartData> Parts = new Dictionary<string, PartData>();
 
-        [NonSerialized]
-        public Dictionary<MorphType, Dictionary<string, Vector2[]>> morphUVs =
+        [NonSerialized] public Dictionary<MorphType, Dictionary<string, Vector2[]>> MorphUVs =
             new Dictionary<MorphType, Dictionary<string, Vector2[]>>();
 
         public float SizeToInfluence(float size, float startValueInMeters)
@@ -43,35 +40,57 @@ namespace CodeBase.Services.FurnitureConstructor.Data
 
         public void AddUV(MorphType type, string objectName, Vector2[] uv)
         {
-            if (!morphUVs.ContainsKey(type))
-                morphUVs[type] = new Dictionary<string, Vector2[]>();
-            morphUVs[type][objectName] = uv;
+            int morphIndex = objectName.IndexOf("-morph", StringComparison.Ordinal);
+            if (morphIndex >= 0)
+            {
+                objectName = objectName.Substring(0, morphIndex);
+            }
+
+            if (!MorphUVs.ContainsKey(type))
+                MorphUVs[type] = new Dictionary<string, Vector2[]>();
+
+            MorphUVs[type][objectName] = uv;
         }
 
         public Vector2[] GetUV(MorphType type, string objectName)
         {
-            return (morphUVs.TryGetValue(type, out var uvDict) && uvDict.TryGetValue(objectName, out var uv))
-                ? uv
-                : null;
+            if (MorphUVs.TryGetValue(type, out var uvDict) && uvDict.TryGetValue(objectName, out var uv))
+            {
+                return uv;
+            }
+
+            foreach (var key in uvDict.Keys)
+            {
+                if (key.StartsWith(objectName))
+                {
+                    Debug.Log($"Using partial match for {objectName} -> {key}");
+                    return uvDict[key];
+                }
+            }
+
+            Debug.LogWarning($"UV not found for {type} - Object: {objectName}");
+            return null;
         }
+
 
         public void AddMaterial(string partName, MaterialInfo material)
         {
-            if (!parts.ContainsKey(partName))
-                parts[partName] = new PartData();
+            if (!Parts.ContainsKey(partName))
+                Parts[partName] = new PartData();
 
-            parts[partName].materials.Add(material);
+            Parts[partName].materials.Add(material);
         }
 
         public void AddStyle(string partName, string styleKey, StyleInfo style)
         {
-            if (!parts.ContainsKey(partName)) parts[partName] = new PartData();
+            if (!Parts.ContainsKey(partName)) Parts[partName] = new PartData();
 
-            if (!parts[partName].styles.ContainsKey(styleKey))
-                parts[partName].styles[styleKey] = new List<StyleInfo>();
+            if (!Parts[partName].styles.ContainsKey(styleKey))
+                Parts[partName].styles[styleKey] = new List<StyleInfo>();
 
-            if (!parts[partName].styles[styleKey].Exists(s => s.label == style.label && s.nameInModel == style.nameInModel))
-                parts[partName].styles[styleKey].Add(style);
+            if (!Parts[partName].styles[styleKey]
+                    .Exists(s => s.label == style.label && s.nameInModel == style.nameInModel))
+                Parts[partName].styles[styleKey].Add(style);
         }
     }
 

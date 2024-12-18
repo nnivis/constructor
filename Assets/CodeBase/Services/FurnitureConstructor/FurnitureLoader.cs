@@ -11,6 +11,7 @@ namespace CodeBase.Services.FurnitureConstructor
     {
         private const string DatabasePath = "DataBase/database";
         private Dictionary<string, List<TypeInfo>> _typeInfoDictionary;
+        private Dictionary<string, FurnitureData> _furnitureDataLookup; // Словарь для быстрого доступа
         private Database _database;
 
         public FurnitureData GetFurnitureData(string furnitureName)
@@ -18,14 +19,8 @@ namespace CodeBase.Services.FurnitureConstructor
             if (_database == null)
                 LoadDatabase();
 
-            foreach (var category in _database.modelsDB)
-            {
-                var data = category.objects.Find(o => o.name == furnitureName);
-                if (data != null)
-                    return data;
-            }
-
-            return null;
+            _furnitureDataLookup.TryGetValue(furnitureName, out var data);
+            return data;
         }
 
         public Database LoadDatabase()
@@ -33,7 +28,7 @@ namespace CodeBase.Services.FurnitureConstructor
             if (_database != null)
                 return _database;
 
-            TextAsset databaseFile = Resources.Load<TextAsset>(DatabasePath); // загрузка бд из Ресурсов
+            TextAsset databaseFile = Resources.Load<TextAsset>(DatabasePath); // Загрузка БД из ресурсов
             if (databaseFile == null)
             {
                 Debug.LogError($"Database file not found at path: {DatabasePath}");
@@ -41,14 +36,14 @@ namespace CodeBase.Services.FurnitureConstructor
             }
 
             string json = CleanJavaScript(databaseFile.text);
-            JObject jsonObject = JObject.Parse(json);
-            _database = JsonConvert.DeserializeObject<Database>(jsonObject.ToString());
+            _database = JsonConvert.DeserializeObject<Database>(json);
             if (_database == null)
             {
                 Debug.LogError("Failed to parse database from JSON.");
                 return null;
             }
 
+            JObject jsonObject = JObject.Parse(json);
             JObject typesObject = jsonObject["types"] as JObject;
             _typeInfoDictionary = new Dictionary<string, List<TypeInfo>>();
             if (typesObject != null)
@@ -61,24 +56,49 @@ namespace CodeBase.Services.FurnitureConstructor
                 }
             }
 
-            BindTypesToMaterialsAndStyles(_database);
-            LoadTexturesForMaterials(_database);
-            InitializeFurnitureDataParts(_database);
+            InitializeFurnitureLookup();
+            ProcessFurnitureData(_database);
 
             return _database;
         }
 
-        private void BindTypesToMaterialsAndStyles(Database database)
+        private void InitializeFurnitureLookup()
+        {
+            _furnitureDataLookup = new Dictionary<string, FurnitureData>();
+            foreach (var category in _database.modelsDB)
+            {
+                foreach (var furniture in category.objects)
+                {
+                    if (!_furnitureDataLookup.ContainsKey(furniture.name))
+                    {
+                        _furnitureDataLookup.Add(furniture.name, furniture);
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"Duplicate furniture name detected: {furniture.name}. Overwriting existing entry.");
+                        _furnitureDataLookup[furniture.name] = furniture;
+                    }
+                }
+            }
+        }
+
+        
+        private void ProcessFurnitureData(Database database)
         {
             foreach (var category in database.modelsDB)
             {
                 foreach (var data in category.objects)
                 {
-                    foreach (var material in data.materials)
+                    if (data.materials != null)
                     {
-                        if (!string.IsNullOrEmpty(material.types) &&
-                            _typeInfoDictionary.TryGetValue(material.types, out var materialList))
-                            material.typeInfo = materialList;
+                        foreach (var material in data.materials)
+                        {
+                            if (!string.IsNullOrEmpty(material.types) &&
+                                _typeInfoDictionary.TryGetValue(material.types, out var materialList))
+                            {
+                                material.typeInfo = materialList;
+                            }
+                        }
                     }
 
                     if (data.styles != null)
@@ -87,58 +107,28 @@ namespace CodeBase.Services.FurnitureConstructor
                         {
                             if (!string.IsNullOrEmpty(style.types) &&
                                 _typeInfoDictionary.TryGetValue(style.types, out var styleList))
-                                style.typeInfo = styleList;
-                        }
-                    }
-                }
-            }
-        }
-
-        private void LoadTexturesForMaterials(Database database)
-        {
-            foreach (var category in database.modelsDB)
-            {
-                foreach (var data in category.objects)
-                {
-                    foreach (var material in data.materials)
-                    {
-                        if (material.typeInfo != null)
-                        {
-                            foreach (var type in material.typeInfo)
                             {
-                                if (!string.IsNullOrEmpty(type.texture))
-                                {
-                                    string cleanedPath = CleanTexturePath(type.texture);
-                                    var texture = Resources.Load<Texture2D>(cleanedPath);
-                                    if (texture != null)
-                                    {
-                                        material.texture = texture;
-                                    }
-                                }
+                                style.typeInfo = styleList;
                             }
                         }
                     }
-                }
-            }
-        }
 
-        private void InitializeFurnitureDataParts(Database database)
-        {
-            foreach (var category in database.modelsDB)
-            {
-                foreach (var data in category.objects)
-                {
                     if (data.morph != null)
                     {
                         foreach (var m in data.morph)
                         {
-                            if (!data.parts.ContainsKey(m.label))
-                                data.parts[m.label] = new PartData {morphInfo = m};
+                            if (!data.Parts.ContainsKey(m.label))
+                            {
+                                data.Parts[m.label] = new PartData { morphInfo = m };
+                            }
                             else
-                                data.parts[m.label].morphInfo = m;
+                            {
+                                data.Parts[m.label].morphInfo = m;
+                            }
                         }
                     }
 
+                    // Инициализация материалов
                     if (data.materials != null)
                     {
                         foreach (var material in data.materials)
@@ -150,9 +140,6 @@ namespace CodeBase.Services.FurnitureConstructor
                                 if (!string.IsNullOrEmpty(type.texture))
                                 {
                                     var texturePath = CleanTexturePath(type.texture);
-                                    var loadedTexture = Resources.Load<Texture2D>(texturePath);
-                                    Debug.Log(
-                                        $"Adding MaterialInfo: {material.label} with texture {loadedTexture?.name} and Texture Path {texturePath}");
 
                                     data.AddMaterial(
                                         material.label,
@@ -161,15 +148,15 @@ namespace CodeBase.Services.FurnitureConstructor
                                             label = material.label,
                                             nameInModel = material.name_in_model,
                                             texturePath = texturePath,
-                                            textureLabel = loadedTexture.name,
-                                            //texture = loadedTexture
+                                            textureLabel = type.label
                                         }
                                     );
                                 }
                             }
                         }
                     }
-                    
+
+                    // Инициализация стилей
                     if (data.styles != null)
                     {
                         foreach (var style in data.styles)
@@ -221,8 +208,11 @@ namespace CodeBase.Services.FurnitureConstructor
             if (path.StartsWith("/"))
                 path = path.Substring(1);
 
-            if (path.EndsWith(".jpg") || path.EndsWith(".png"))
-                path = path.Substring(0, path.LastIndexOf('.'));
+            int extensionIndex = path.LastIndexOf('.');
+            if (extensionIndex > 0)
+            {
+                path = path.Substring(0, extensionIndex);
+            }
 
             return path;
         }

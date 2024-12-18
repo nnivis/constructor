@@ -47,7 +47,7 @@ namespace CodeBase.Services.FurnitureConstructor.View
         {
             if (_currentFurniture == null) return;
 
-            var morphes = _currentFurniture.parts.Values.Select(p => p.morphInfo).ToList();
+            var morphes = _currentFurniture.Parts.Values.Select(p => p.morphInfo).ToList();
             var heightMorph = morphes.FirstOrDefault(m => m.label == "Height");
             var widthMorph = morphes.FirstOrDefault(m => m.label == "Width");
             var depthMorph = morphes.FirstOrDefault(m => m.label == "Depth");
@@ -89,9 +89,9 @@ namespace CodeBase.Services.FurnitureConstructor.View
         {
             materialSection.Clear();
 
-            if (_currentFurniture?.parts == null) return;
+            if (_currentFurniture?.Parts == null) return;
 
-            foreach (var part in _currentFurniture.parts)
+            foreach (var part in _currentFurniture.Parts)
             {
                 if (part.Value.materials?.Any() == true)
                 {
@@ -115,9 +115,9 @@ namespace CodeBase.Services.FurnitureConstructor.View
         {
             stylesSection.Clear();
 
-            if (_currentFurniture?.parts == null) return;
+            if (_currentFurniture?.Parts == null) return;
 
-            foreach (var part in _currentFurniture.parts)
+            foreach (var part in _currentFurniture.Parts)
             {
                 foreach (var styleEntry in part.Value.styles)
                 {
@@ -156,15 +156,15 @@ namespace CodeBase.Services.FurnitureConstructor.View
 
         private void OnMaterialChanged(string partName, string selectedTextureName)
         {
-            //Debug.Log($"Selected texture for part '{partName}': {selectedTextureName}");
+            Debug.Log($"Selected texture for part '{partName}': {selectedTextureName}");
             OnMaterialChange?.Invoke(_currentFurniture, partName, selectedTextureName);
         }
 
         private void OnStyleChanged(string styleKey, string selectedStyleLabel)
         {
-            if (_currentFurniture?.parts == null) return;
+            if (_currentFurniture?.Parts == null) return;
 
-            foreach (var part in _currentFurniture.parts)
+            foreach (var part in _currentFurniture.Parts)
             {
                 if (part.Value.styles.TryGetValue(styleKey, out var styleInfos))
                 {
