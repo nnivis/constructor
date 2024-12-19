@@ -25,6 +25,8 @@ namespace CodeBase.Services.FurnitureConstructor.View
             DisableSectionPanel();
         }
 
+        public void SetStyleIconVisibility(bool isVisible) => styleButton.gameObject.SetActive(isVisible);
+
         private void OnEnable()
         {
             sizeButton.onClick.AddListener(OnClickSizeButton);

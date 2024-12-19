@@ -341,7 +341,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2107409826236812522, guid: 0ccd33c836a42f34096e28027145193d, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5522022984475634456, guid: 0ccd33c836a42f34096e28027145193d, type: 3}
       propertyPath: m_IsActive
@@ -2389,6 +2389,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: DESK-WVR
       objectReference: {fileID: 0}
+    - target: {fileID: 2107409826236812522, guid: 4bfd9122ceb6c734784130d28947774d, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5039402839842012165, guid: 4bfd9122ceb6c734784130d28947774d, type: 3}
       propertyPath: m_DirtyAABB
       value: 0
@@ -4313,8 +4317,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fdeab22c17d89de4793148d4a28348d6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gameObject1Example: {fileID: 643296224}
-  gameObject2Example: {fileID: 264826432}
+  gameObject1Example: {fileID: 264826432}
+  gameObject2Example: {fileID: 643296224}
   furnitureHandler: {fileID: 1532859321}
 --- !u!1 &1538847543
 GameObject:

@@ -43,6 +43,23 @@ namespace CodeBase.Services.FurnitureConstructor.View
             UpdateSizeSection();
             UpdateMaterialSection();
             UpdateStyleSection();
+            
+            bool hasStyles = CheckIfStylesExist();
+            furnitureVisibilityPanel.SetStyleIconVisibility(hasStyles);
+        }
+        
+        private bool CheckIfStylesExist()
+        {
+            if (_currentFurniture?.Parts == null)
+                return false;
+
+            foreach (var part in _currentFurniture.Parts.Values)
+            {
+                if (part.styles?.Count > 0)
+                    return true;
+            }
+
+            return false;
         }
 
         private void UpdateSizeSection()
