@@ -1,4 +1,3 @@
-using System.Data;
 using System.Text;
 using UnityEngine;
 
@@ -23,9 +22,11 @@ namespace CodeBase.Services.FurnitureConstructor.Data
         }
 
 
-        public void ApplyNewMaterial(string label, string textureName) => _modifier.SetMaterialByLabel(Data, Prefab, label, textureName);
+        public void ApplyNewMaterial(string label, string textureName) =>
+            _modifier.SetMaterialByLabel(Data, Prefab, label, textureName);
 
-        public void ApplyNewStyle( string key, string label) => _modifier.SetStyleByKeyAndLabel(Data, Prefab,  key, label);
+        public void ApplyNewStyle(string key, string label) =>
+            _modifier.SetStyleByKeyAndLabel(Data, Prefab, key, label);
 
         public void ApplyNewSize(MorphType type, float value) => _modifier.SetSize(Data, Prefab, type, value);
 
@@ -57,7 +58,7 @@ namespace CodeBase.Services.FurnitureConstructor.Data
                 foreach (var material in part.Value.materials)
                 {
                     sb.AppendLine(
-                        $"      Material: Label={material.label}, NameInModel={material.nameInModel}, TexturePath= {(material.texturePath)}, TextureLabel {(material.textureLabel)}");
+                        $"      Material: Label={material.label}, NameInModel={material.nameInModel}, TexturePath={material.texturePath}, TextureLabel={material.textureLabel}, Width={material.width}, Height={material.height}");
                 }
 
                 sb.AppendLine("    Styles:");

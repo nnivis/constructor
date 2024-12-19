@@ -23,6 +23,7 @@ namespace CodeBase.Services.FurnitureConstructor.Modifier
             SaveOriginalUVs(prefab);
 
             UpdateInfluences(data, prefab);
+            UpdateUVs(data, prefab);
         }
 
         public void SetSize(FurnitureData data, GameObject prefab, MorphType type, float newValue)
@@ -34,9 +35,9 @@ namespace CodeBase.Services.FurnitureConstructor.Modifier
             if (index >= 0 && index < _sizes.Length)
             {
                 _sizes[index] = newValue;
-                UpdateInfluences(data, prefab);
 
-                UpdateUVs(data, prefab); // Передаем data и prefab
+                UpdateInfluences(data, prefab);
+                UpdateUVs(data, prefab);
             }
         }
 
@@ -48,7 +49,7 @@ namespace CodeBase.Services.FurnitureConstructor.Modifier
             {
                 if (renderer.sharedMesh != null)
                 {
-                    _originalUVsDict[renderer] = (Vector2[])renderer.sharedMesh.uv.Clone();
+                    _originalUVsDict[renderer] = (Vector2[]) renderer.sharedMesh.uv.Clone();
                 }
             }
         }
@@ -60,7 +61,7 @@ namespace CodeBase.Services.FurnitureConstructor.Modifier
             {
                 if (renderer.sharedMesh != null && _originalUVsDict.TryGetValue(renderer, out var originalUVs))
                 {
-                    Vector2[] newUVs = (Vector2[])originalUVs.Clone();
+                    Vector2[] newUVs = (Vector2[]) originalUVs.Clone();
 
                     foreach (MorphType type in System.Enum.GetValues(typeof(MorphType)))
                     {
@@ -82,11 +83,11 @@ namespace CodeBase.Services.FurnitureConstructor.Modifier
                         }
                         else
                         {
-                            Debug.LogWarning($"Morph UVs not found or length mismatch for {type} on {objectName}");
+                          //  Debug.LogWarning($"Morph UVs not found or length mismatch for {type} on {objectName}");
                         }
                     }
 
-                 
+
                     Mesh updatedMesh = Object.Instantiate(renderer.sharedMesh);
                     updatedMesh.name = renderer.sharedMesh.name + "_UpdatedUVs";
                     updatedMesh.uv = newUVs;
@@ -118,7 +119,7 @@ namespace CodeBase.Services.FurnitureConstructor.Modifier
                     if (blendShapeCount >= 3)
                     {
                         for (int i = 0; i < 3; i++)
-                            skinnedRenderer.SetBlendShapeWeight(i, _influences[i] ); // BlendShape веса в Unity от 0 до 100
+                            skinnedRenderer.SetBlendShapeWeight(i, _influences[i]);
                     }
                 }
             }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 using UnityEngine;
 
 namespace CodeBase.Services.FurnitureConstructor.Data
@@ -68,7 +69,7 @@ namespace CodeBase.Services.FurnitureConstructor.Data
                 }
             }
 
-            Debug.LogWarning($"UV not found for {type} - Object: {objectName}");
+            //    Debug.LogWarning($"UV not found for {type} - Object: {objectName}");
             return null;
         }
 
@@ -107,7 +108,6 @@ namespace CodeBase.Services.FurnitureConstructor.Data
     {
         public string label, types, name_in_model;
         public List<TypeInfo> typeInfo;
-        public Texture2D texture;
     }
 
     [Serializable]
@@ -123,6 +123,9 @@ namespace CodeBase.Services.FurnitureConstructor.Data
         public string label;
         public string name_in_model;
         public string texture;
+
+        public float width;
+        public float height;
     }
 
     [Serializable]
@@ -140,6 +143,9 @@ namespace CodeBase.Services.FurnitureConstructor.Data
         public string nameInModel;
         public string texturePath;
         public string textureLabel;
+
+        public float width;
+        public float height;
     }
 
     [Serializable]

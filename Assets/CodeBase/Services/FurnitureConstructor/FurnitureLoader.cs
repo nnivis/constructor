@@ -75,14 +75,15 @@ namespace CodeBase.Services.FurnitureConstructor
                     }
                     else
                     {
-                        Debug.LogWarning($"Duplicate furniture name detected: {furniture.name}. Overwriting existing entry.");
+                        Debug.LogWarning(
+                            $"Duplicate furniture name detected: {furniture.name}. Overwriting existing entry.");
                         _furnitureDataLookup[furniture.name] = furniture;
                     }
                 }
             }
         }
 
-        
+
         private void ProcessFurnitureData(Database database)
         {
             foreach (var category in database.modelsDB)
@@ -119,7 +120,7 @@ namespace CodeBase.Services.FurnitureConstructor
                         {
                             if (!data.Parts.ContainsKey(m.label))
                             {
-                                data.Parts[m.label] = new PartData { morphInfo = m };
+                                data.Parts[m.label] = new PartData {morphInfo = m};
                             }
                             else
                             {
@@ -128,7 +129,6 @@ namespace CodeBase.Services.FurnitureConstructor
                         }
                     }
 
-                    // Инициализация материалов
                     if (data.materials != null)
                     {
                         foreach (var material in data.materials)
@@ -148,7 +148,9 @@ namespace CodeBase.Services.FurnitureConstructor
                                             label = material.label,
                                             nameInModel = material.name_in_model,
                                             texturePath = texturePath,
-                                            textureLabel = type.label
+                                            textureLabel = type.label,
+                                            width = type.width,
+                                            height = type.height
                                         }
                                     );
                                 }
@@ -156,7 +158,6 @@ namespace CodeBase.Services.FurnitureConstructor
                         }
                     }
 
-                    // Инициализация стилей
                     if (data.styles != null)
                     {
                         foreach (var style in data.styles)

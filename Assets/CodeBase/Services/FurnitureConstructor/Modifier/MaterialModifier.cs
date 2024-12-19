@@ -6,6 +6,8 @@ namespace CodeBase.Services.FurnitureConstructor.Modifier
 {
     public class MaterialModifier
     {
+        private const int I = 4;
+
         public void InitializeMaterial(FurnitureData data, GameObject prefab)
         {
             if (data == null || prefab == null)
@@ -19,7 +21,7 @@ namespace CodeBase.Services.FurnitureConstructor.Modifier
                     if (firstMaterial == null)
                         continue;
 
-                    ApplyMaterialToPrefab(prefab, firstMaterial.nameInModel, firstMaterial.texturePath);
+                    ApplyMaterialToPrefab(prefab, data, firstMaterial.nameInModel, firstMaterial.texturePath);
                 }
             }
         }
@@ -45,11 +47,12 @@ namespace CodeBase.Services.FurnitureConstructor.Modifier
             {
                 return;
             }
-            
-            ApplyMaterialToPrefab(prefab, targetMaterial.nameInModel, texturePath);
+
+            ApplyMaterialToPrefab(prefab, data, targetMaterial.nameInModel, texturePath);
         }
 
-        private void ApplyMaterialToPrefab(GameObject prefab, string nameInModel, string texturePath)
+        private void ApplyMaterialToPrefab(GameObject prefab, FurnitureData data, string nameInModel,
+            string texturePath)
         {
             var renderers = prefab.GetComponentsInChildren<SkinnedMeshRenderer>(true);
 
@@ -69,16 +72,32 @@ namespace CodeBase.Services.FurnitureConstructor.Modifier
 
                         if (texture != null)
                         {
-                            materialCopy.SetTexture("baseColorTexture", texture); 
-                            // materialCopy.SetTextureScale("baseColorTexture"); // сделать тайлинг добавить дату
-
+                            materialCopy.SetTexture("baseColorTexture", texture);
+                            ApplyTextureTiling(materialCopy, data, texturePath);
                         }
+
                         renderer.sharedMaterial = materialCopy;
                     }
                 }
             }
-            
         }
-        
+
+        public void ApplyTextureTiling(Material material, FurnitureData data, string texturePath)
+        {
+            MaterialInfo materialInfo = data.Parts.Values
+                .SelectMany(part => part.materials)
+                .FirstOrDefault(m => m.texturePath == texturePath);
+
+            if (materialInfo == null)
+            {
+                return;
+            }
+
+         //   Debug.Log(material.GetTextureScale("baseColorTexture"));
+            
+            material.SetTextureScale("baseColorTexture", new Vector2(materialInfo.width / I, materialInfo.height / I));
+
+           // Debug.Log(material.GetTextureScale("baseColorTexture"));
+        }
     }
 }

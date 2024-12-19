@@ -13,13 +13,13 @@ namespace CodeBase.Services.FurnitureConstructor.View
         public event Action<FurnitureData, MorphType, float> OnSizeChange;
 
         [Header("Section")] 
+        [SerializeField] private FurnitureVisibilityPanel furnitureVisibilityPanel;
         [SerializeField] private DropDownSectionView modelSection;
         [SerializeField] private SliderSectionView sizeSection;
         [SerializeField] private DropDownSectionView materialSection;
         [SerializeField] private DropDownSectionView stylesSection;
 
-        [Header("Prefab")] 
-        [SerializeField] private DropDownView dropDownViewPrefab;
+        [Header("Prefab")] [SerializeField] private DropDownView dropDownViewPrefab;
 
         private IEnumerable<Furniture> _furnitures;
         private FurnitureData _currentFurniture;
@@ -27,6 +27,8 @@ namespace CodeBase.Services.FurnitureConstructor.View
         public void Initialize(IEnumerable<Furniture> furnitures)
         {
             _furnitures = furnitures;
+            
+            furnitureVisibilityPanel.Initialize(sizeSection, materialSection, stylesSection);
         }
 
         public void UpdateSection()
@@ -80,10 +82,7 @@ namespace CodeBase.Services.FurnitureConstructor.View
             modelSection.SetSelectedValue(furnitureNames.Count - 1, furnitureNames.Last());
         }
 
-        private void UpdateCurrentFurniture()
-        {
-            _currentFurniture = _furnitures?.LastOrDefault()?.Data;
-        }
+        private void UpdateCurrentFurniture() => _currentFurniture = _furnitures?.LastOrDefault()?.Data;
 
         private void UpdateMaterialSection()
         {
@@ -174,16 +173,14 @@ namespace CodeBase.Services.FurnitureConstructor.View
                     {
                         Debug.Log(
                             $"Selected style: Key={styleKey}, Label={selectedStyle.label}, NameInModel={selectedStyle.nameInModel}");
-                        OnStyleChange?.Invoke(_currentFurniture, styleKey, selectedStyle.label, selectedStyle.nameInModel);
+                        OnStyleChange?.Invoke(_currentFurniture, styleKey, selectedStyle.label,
+                            selectedStyle.nameInModel);
                         return;
                     }
                 }
             }
         }
 
-        private void OnSizeChanged(MorphType type, float value)
-        {
-            OnSizeChange?.Invoke(_currentFurniture, type, value);
-        }
+        private void OnSizeChanged(MorphType type, float value) => OnSizeChange?.Invoke(_currentFurniture, type, value);
     }
 }

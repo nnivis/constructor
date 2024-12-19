@@ -57,13 +57,13 @@
         
         ],
         "MaterialTypes": [
-            { "label": "Seamless 1", "texture": "/assets/textures/seamless-01.jpg" },
-            { "label": "Seamless 2", "texture": "/assets/textures/seamless-02.jpg" },
-            { "label": "Oak", "texture": "/assets/textures/Oak.jpg" }
+            { "label": "Seamless 1", "texture": "/assets/textures/seamless-01.jpg", "width": 35.0, "height": 35.0 },
+            { "label": "Seamless 2", "texture": "/assets/textures/seamless-02.jpg", "width": 35.0, "height": 35.0 },
+            { "label": "Oak", "texture": "/assets/textures/Oak.jpg","width": 35.0, "height": 35.0 }
         ],
         "GlassTypes": [
-            { "label": "Clear", "texture": "/assets/textures/frosted-0.jpg" },
-            { "label": "50% Frosted", "texture": "/assets/textures/frosted-50.jpg" }
+            { "label": "Clear", "texture": "/assets/textures/frosted-0.jpg","width": 35.0, "height": 35.0 },
+            { "label": "50% Frosted", "texture": "/assets/textures/frosted-50.jpg","width": 35.0, "height": 35.0 }
         ],
         "AdditionalModestyStyles": [
             { "label": "Acrylic", "name_in_model": "modesty-16ma" }
