@@ -30,8 +30,6 @@ namespace CodeBase.Services.FurnitureConstructor.Data
 
         public void ApplyNewSize(MorphType type, float value) => _modifier.SetSize(Data, Prefab, type, value);
 
-        public Vector2[] GetUV(MorphType type, string objectName) => Data.GetUV(type, objectName);
-
         private void DebugFurnitureData()
         {
             if (Data == null)

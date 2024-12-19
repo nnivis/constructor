@@ -68,9 +68,6 @@ namespace CodeBase.Services.FurnitureConstructor
             _currentFurniture.ApplyNewSize(type, value);
         }
 
-        private bool CheckData(FurnitureData data)
-        {
-            return !ReferenceEquals(data, _currentFurniture.Data);
-        }
+        private bool CheckData(FurnitureData data) => !ReferenceEquals(data, _currentFurniture.Data);
     }
 }

@@ -10,9 +10,12 @@ namespace CodeBase.Services.FurnitureConstructor.Modifier
         private float[] _influences;
 
         private Dictionary<SkinnedMeshRenderer, Vector2[]> _originalUVsDict;
+        private BlockStackModifier _blockStackModifier;
 
         public void InitializeSize(FurnitureData data, GameObject prefab)
         {
+            _blockStackModifier = new BlockStackModifier();
+            
             _sizes = new float[3]
             {
                 FindMorph(data, MorphType.Height)?.min ?? 0.72f,

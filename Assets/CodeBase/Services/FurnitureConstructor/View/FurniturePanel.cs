@@ -62,6 +62,8 @@ namespace CodeBase.Services.FurnitureConstructor.View
             return false;
         }
 
+        private void UpdateCurrentFurniture() => _currentFurniture = _furnitures?.LastOrDefault()?.Data;
+
         private void UpdateSizeSection()
         {
             if (_currentFurniture == null) return;
@@ -98,8 +100,6 @@ namespace CodeBase.Services.FurnitureConstructor.View
 
             modelSection.SetSelectedValue(furnitureNames.Count - 1, furnitureNames.Last());
         }
-
-        private void UpdateCurrentFurniture() => _currentFurniture = _furnitures?.LastOrDefault()?.Data;
 
         private void UpdateMaterialSection()
         {

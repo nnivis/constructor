@@ -11,7 +11,7 @@ namespace CodeBase.Services.FurnitureConstructor
     {
         private const string DatabasePath = "DataBase/database";
         private Dictionary<string, List<TypeInfo>> _typeInfoDictionary;
-        private Dictionary<string, FurnitureData> _furnitureDataLookup; // Словарь для быстрого доступа
+        private Dictionary<string, FurnitureData> _furnitureDataLookup; 
         private Database _database;
 
         public FurnitureData GetFurnitureData(string furnitureName)
@@ -28,7 +28,7 @@ namespace CodeBase.Services.FurnitureConstructor
             if (_database != null)
                 return _database;
 
-            TextAsset databaseFile = Resources.Load<TextAsset>(DatabasePath); // Загрузка БД из ресурсов
+            TextAsset databaseFile = Resources.Load<TextAsset>(DatabasePath); 
             if (databaseFile == null)
             {
                 Debug.LogError($"Database file not found at path: {DatabasePath}");
