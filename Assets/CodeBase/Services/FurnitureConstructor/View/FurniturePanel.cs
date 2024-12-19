@@ -60,7 +60,7 @@ namespace CodeBase.Services.FurnitureConstructor.View
                 depthMorph?.min ?? 0.5f, depthMorph?.max ?? 2f
             );
 
-            sizeSection.OnSizeChanged -= OnSizeChanged; // Удаление старых подписок
+            sizeSection.OnSizeChanged -= OnSizeChanged;
             sizeSection.OnSizeChanged += OnSizeChanged;
         }
 

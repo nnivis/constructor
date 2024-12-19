@@ -21,6 +21,8 @@ namespace CodeBase.Services.FurnitureConstructor.View
             _sizeSection = sizeSection;
             _materialSection = materialSection;
             _stylesSection = styleSection;
+
+            DisableSectionPanel();
         }
 
         private void OnEnable()
@@ -59,6 +61,13 @@ namespace CodeBase.Services.FurnitureConstructor.View
                 sectionToToggle.SetActive(true);
                 _activeSection = sectionToToggle;
             }
+        }
+
+        private void DisableSectionPanel()
+        {
+            _sizeSection.gameObject.SetActive(false);
+            _materialSection.gameObject.SetActive(false);
+            _stylesSection.gameObject.SetActive(false);
         }
     }
 }

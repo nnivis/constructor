@@ -22,7 +22,6 @@ namespace CodeBase.Services.FurnitureConstructor.Data
     public class FurnitureData
     {
         public string name;
-        public string model;
         public float start;
         public List<Morph> morph;
         public List<CustomMaterial> materials;
@@ -106,14 +105,17 @@ namespace CodeBase.Services.FurnitureConstructor.Data
     [Serializable]
     public class CustomMaterial
     {
-        public string label, types, name_in_model;
+        public string label;
+        public string types;
+        public string name_in_model;
         public List<TypeInfo> typeInfo;
     }
 
     [Serializable]
     public class Style
     {
-        public string label, types;
+        public string label;
+        public string types;
         public List<TypeInfo> typeInfo;
     }
 
